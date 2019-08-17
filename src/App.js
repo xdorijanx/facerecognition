@@ -25,22 +25,24 @@ const particlesOptions = {
     }
   }
 };
+
+const initialState = {
+  input: "",
+  imageUrl: "",
+  box: {},
+  route: "signin",
+  isSignedIn: false,
+  user: {
+    id: "",
+    name: "",
+    password: "",
+    email: "",
+    entries: 0,
+    joined: ""
+  }
+};
 class App extends Component {
-  state = {
-    input: "",
-    imageUrl: "",
-    box: {},
-    route: "signin",
-    isSignedIn: false,
-    user: {
-      id: "",
-      name: "",
-      password: "",
-      email: "",
-      entries: 0,
-      joined: ""
-    }
-  };
+  state = initialState;
 
   loadUser = data => {
     this.setState({
@@ -56,6 +58,7 @@ class App extends Component {
   };
 
   calculateFaceLocation = data => {
+    debugger;
     const clarifaiFace =
       data.outputs[0].data.regions[0].region_info.bounding_box;
     const image = document.getElementById("inputimage");
@@ -85,25 +88,27 @@ class App extends Component {
       .predict(Clarifai.FACE_DETECT_MODEL, this.state.input)
       .then(res => {
         if (res) {
-          fetch('http://localhost:3001/image', {
-            method: 'put',
-            headers: {'Content-Type': 'application/json'},
+          fetch("http://localhost:3001/image", {
+            method: "put",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               id: this.state.user.id
             })
           })
-          .then(res => res.json())
-          .then(count => {
-           this.setState( Object.assign(this.state.user, { entries: count}))
-          })
+            .then(res => res.json())
+            .then(count => {
+              this.setState(Object.assign(this.state.user, { entries: count }));
+            })
+            .catch(console.log)
         }
+        this.displayFaceBox(this.calculateFaceLocation(res));
       })
       .catch(err => console.log("[ERROR]:", err));
   };
 
   onRouteChange = route => {
     if (route === "signout") {
-      this.setState({ isSignedIn: false });
+      this.setState(initialState);
     } else if (route === "home") {
       this.setState({ isSignedIn: true });
     }
