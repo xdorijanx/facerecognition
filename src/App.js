@@ -8,12 +8,8 @@ import Signin from "./components/Signin/Signin";
 import Register from "./components/Register/Register";
 
 import Particles from "react-particles-js";
-import Clarifai from "clarifai";
-import "./App.css";
 
-const app = new Clarifai.App({
-  apiKey: "18ea513bd90044788f3b3a22fdcda90c"
-});
+import "./App.css";
 
 const particlesOptions = {
   particles: {
@@ -83,9 +79,14 @@ class App extends Component {
 
   onButtonSubmit = () => {
     this.setState({ imageUrl: this.state.input });
-    console.log("click");
-    app.models
-      .predict(Clarifai.FACE_DETECT_MODEL, this.state.input)
+    fetch("http://localhost:3001/imageUrl", {
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        input: this.state.input
+      })
+    })
+    .then(res => res.json())
       .then(res => {
         if (res) {
           fetch("http://localhost:3001/image", {
@@ -99,7 +100,7 @@ class App extends Component {
             .then(count => {
               this.setState(Object.assign(this.state.user, { entries: count }));
             })
-            .catch(console.log)
+            .catch(console.log);
         }
         this.displayFaceBox(this.calculateFaceLocation(res));
       })
